@@ -78,7 +78,7 @@ conky.text = [[
   ${offset 215}${font Roboto-Regular:size=14}${color #ad1a26}[$memperc%]
   ${offset 290}${voffset 10}${color #ffffff}${font Roboto-Bold:size=14}MEM
 
-  ${offset 120}${voffset -25}${font Roboto-Regular:size=8}Core
+  ${offset 120}${voffset -25}${font Roboto-Regular:size=10}Core
   ${offset 120}Usage
 
   ${offset 225}${voffset 135}${color #ffffff}${font Roboto-Bold:size=14}GPU
