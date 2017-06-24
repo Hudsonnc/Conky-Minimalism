@@ -44,7 +44,7 @@ settings_table = {
   },
   {
      name='downspeedf',
-     arg='enp3s0',
+     arg='wlp7s0',
      max=800,
      bg_colour=0xffffff,
      bg_alpha=0.1,
@@ -58,7 +58,7 @@ settings_table = {
   },
   {
      name='upspeedf',
-     arg='enp3s0',
+     arg='wlp7s0',
      max=800,
      bg_colour=0xffffff,
      bg_alpha=0.1,
@@ -78,10 +78,10 @@ settings_table = {
      bg_alpha=0.1,
      fg_colour=0x607d8b,
      fg_alpha=0.6,
-     x=155, y=420,
+     x=140, y=420,
      radius=70,
      thickness=10,
-     start_angle=140,
+     start_angle=150,
      end_angle=450
    },
    {
@@ -92,10 +92,10 @@ settings_table = {
      bg_alpha=0.1,
      fg_colour=0x3f51b5,
      fg_alpha=0.6,
-     x=155, y=420,
+     x=140, y=420,
      radius=60,
      thickness=9,
-     start_angle=140,
+     start_angle=150,
      end_angle=450
    },
    {
@@ -106,10 +106,10 @@ settings_table = {
      bg_alpha=0.1,
      fg_colour=0x00796b,
      fg_alpha=0.6,
-     x=155, y=420,
+     x=140, y=420,
      radius=50,
      thickness=9,
-     start_angle=140,
+     start_angle=150,
      end_angle=450
    },
    {
@@ -120,25 +120,11 @@ settings_table = {
      bg_alpha=0.1,
      fg_colour=0xe53935,
      fg_alpha=0.6,
-     x=155, y=420,
+     x=140, y=420,
      radius=40,
      thickness=9,
-     start_angle=140,
+     start_angle=150,
      end_angle=450
-   },
-   {
-       name='fs_used_perc',
-       arg='/',
-       max=100,
-       bg_colour=0xffffff,
-       bg_alpha=0.1,
-       fg_colour=0xd7d7d7,
-       fg_alpha=0.6,
-       x=285, y=590,
-       radius=55,
-       thickness=18,
-       start_angle=0,
-       end_angle=270
    },
    {
        name='memperc',
@@ -148,11 +134,39 @@ settings_table = {
        bg_alpha=0.1,
        fg_colour=0xd7d7d7,
        fg_alpha=0.6,
-       x=285, y=590,
-       radius=70,
-       thickness=7,
+       x=375, y=420,
+       radius=55,
+       thickness=15,
        start_angle=0,
-       end_angle=270
+       end_angle=280
+   },
+   {
+       name='gpu',
+       arg='temp',
+       max=96,
+       bg_colour=0xffffff,
+       bg_alpha=0.1,
+       fg_colour=0xd7d7d7,
+       fg_alpha=0.6,
+       x=300, y=620,
+       radius=55,
+       thickness=15,
+       start_angle=180,
+       end_angle=450
+   },
+   {
+       name='gpu',
+       arg='use',
+       max=100,
+       bg_colour=0xffffff,
+       bg_alpha=0.1,
+       fg_colour=0xd7d7d7,
+       fg_alpha=0.6,
+       x=300, y=620,
+       radius=75,
+       thickness=15,
+       start_angle=180,
+       end_angle=450
    }
 }
 --set line colour
@@ -260,9 +274,8 @@ function DrawBars (cr,start_x,start_y,bar_width,bar_height,corenum,r,g,b)
   cairo_rectangle (cr,start_x,start_y,bar_width,-bar_height)
   cairo_fill(cr)
   cairo_set_source_rgba(cr,r,g,b,1)
-  value = tonumber(conky_parse(string.format("${exec sensors | grep -o 'Core %s:        +[0-9].' | sed -r 's/%s:|[^0-9]//g'}",corenum,corenum)))
-  -- IF TEMP BARS DO NOT SHOW, try commenting the line above with '--' and uncommenting the line below by removing '--'. (Thanks to /u/IAmAFedora)
-  --value = tonumber(conky_parse(string.format("${exec sensors | grep -o 'Core %s:         +[0-9].' | sed -r 's/%s:|[^0-9]//g'}",corenum,corenum)))
+  value = tonumber(conky_parse(string.format("${exec sensors | grep -o 'Core %s:         +[0-9].' | sed -r 's/%s:|[^0-9]//g'}",corenum,corenum)))
+  if ( value == nil ) then value = 0 end
   max_value=100
   scale=bar_height/max_value
   indicator_height=scale*value
@@ -276,11 +289,13 @@ function conky_clock_rings()
   local str=''
   local value=0
 
-  str=string.format('${%s %s}',pt['name'],pt['arg'])
-  str=conky_parse(str)
+  if pt['name'] ~= "gpu"  then
+    str=string.format('${%s %s}',pt['name'],pt['arg'])
+    str=conky_parse(str)
+    value=tonumber(str)
+  end
 
-  value=tonumber(str)
-  if value == nil then value = 0 end
+  if not value then value = 0 end
 
 
   if pt['arg'] == "%I.%M"  then
@@ -290,6 +305,16 @@ function conky_clock_rings()
 
   if pt['arg'] == "%M.%S"  then
     value=os.date("%M")+os.date("%S")/60
+  end
+
+  if pt['name'] == "gpu"  then
+    if pt['arg'] == "temp" then
+      value=tonumber(conky_parse(string.format("${exec nvidia-smi -q -d temperature | grep -o 'GPU Current Temp            : [0-9].' | sed  -r 's/[^0-9]//g'}")))
+    end
+
+    if pt['arg'] == "use" then
+      value=tonumber(conky_parse(string.format("${exec nvidia-smi -q -d utilization | grep 'Gpu                         : [0-9].' | sed  -r 's/[^0-9]//g'}")))
+    end
   end
 
   pct=value/pt['max']
@@ -314,21 +339,21 @@ end
   --parse in arguments as so (cr,startx postion,starty postion, how much to move x, how much to move y)
   DrawLine(cr,0,0,343,0,8)
   DrawLine(cr,343,0,0,25,4)
-  DrawLine(cr,100,75,170,0,4)
+  DrawLine(cr,0,75,270,0,4)
 
   --draw network lines
   DrawLine(cr,398,155,0,23,4)
   DrawLine(cr,0,155,400,0,4)
-  --draw cpu temp bars
-  DrawBars(cr,250,470,30,100,0,rgb_to_r_g_b(0x607d8b))
-  DrawBars(cr,290,470,30,100,1,rgb_to_r_g_b(0x3f51b5))
-  DrawBars(cr,330,470,30,100,2,rgb_to_r_g_b(0x00796b))
-  DrawBars(cr,370,470,30,100,3,rgb_to_r_g_b(0xe53935))
-  --draw cpu temp lines
-  DrawLine(cr,0,320,348,0,4)
-  DrawLine(cr,348,318,0,26,4)
-  --draw mem lines
-  DrawLine(cr,0,585,144,0,4)
+  
+  --draw cpu and memory lines
+  DrawLine(cr,0,322,365,0,4)
+  DrawLine(cr,365,320,0,25,4)
+  --DrawLine(cr,126,320,0,38,4)
+  DrawLine(cr,0,420,65,0,4)
+
+  --draw gpu lines
+  DrawLine(cr,0,517,200,0,4)
+  DrawLine(cr,200,515,0,25,4)
 
 
   draw_clock_hands(cr,clock_x,clock_y)
