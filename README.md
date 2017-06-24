@@ -1,16 +1,15 @@
 # Conky-Minimalism
-A Simple Conky config
+Minor variation of simple conky config by [NoTranslation](https://github.com/NoTranslation/Conky-Minimalism). A few minor visual tweaks as well as removing cpu core temps and replacing them with (nvidia) GPU temp and usage. Also replaced the Arch logo with the Ubuntu logo because I use Ubuntu :P
 
 **Requires:**
-  * ttf-robot  |  [AUR](https://www.archlinux.org/packages/community/any/ttf-roboto/)
-  * Conky with lua support | [AUR](https://aur.archlinux.org/packages/conky-lua/)
-  * lm-sensors | [AUR](https://www.archlinux.org/packages/?name=lm_sensors)
+  * ttf-robot
+  * Conky with lua support
+  * lm-sensors
+  * nvidia-smi
 
 ## Installation
   1. Extract the zip file
   2. Change the paths in minimalismRC & startup.sh
   3. Run startup.sh
-  
-Note: If Core temps are not displayed correctly, see line 264 in clocks.lua 
 
-![alt text](https://raw.githubusercontent.com/NoTranslation/Conky-Minimalism/master/example.png)
+![alt text](https://raw.githubusercontent.com/Hudsonnc/Conky-Minimalism/master/example.png)
